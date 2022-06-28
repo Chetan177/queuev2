@@ -83,3 +83,21 @@ func (p *MQProducer) PublishMessage(routingKey string, body []byte, priority uin
 	channel.Close()
 	return nil
 }
+
+func (p *MQProducer) CreateQueue(queueName string, maxPriority uint8) error {
+	channel, err := p.conn.Channel()
+	if err != nil {
+		return fmt.Errorf("error:: getting channel: %+v", err)
+	}
+	log.Printf("declaring queue %s", queueName)
+	_, err = channel.QueueDeclare(
+		queueName, // name of the queue
+		true,      // durable
+		false,     // delete when unused
+		false,     // exclusive
+		false,     // noWait
+		amqp.Table{"x-max-priority": maxPriority}, // arguments
+	)
+	channel.Close()
+	return nil
+}

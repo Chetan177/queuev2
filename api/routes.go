@@ -11,9 +11,15 @@ type url struct {
 	Method  string
 }
 
-func (s *Server) loadQueueGroup() {
+func (s *Server) loadTaskGroup() {
 	queueGroup := s.restServer.Group(s.getAccountLevelBaseURL() + "/task")
 	routes := s.getTaskRoutes()
+	s.loadRoutes(queueGroup, routes)
+}
+
+func (s *Server) loadQueueGroup() {
+	queueGroup := s.restServer.Group(s.getAccountLevelBaseURL() + "/queue")
+	routes := s.getQueueRoutes()
 	s.loadRoutes(queueGroup, routes)
 }
 
@@ -51,7 +57,7 @@ func (s *Server) getTaskRoutes() []url {
 func (s *Server) getQueueRoutes() []url {
 	Urls := []url{
 
-		{"", s.submitTask, "POST"},
+		{"", s.createQueue, "POST"},
 	}
 
 	return Urls

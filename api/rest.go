@@ -64,6 +64,7 @@ func createServer(restPort int, mqProducer *producer.MQProducer) *Server {
 func (s *Server) StartServer() error {
 
 	s.loadQueueGroup()
+	s.loadTaskGroup()
 
 	data, err := json.MarshalIndent(s.restServer.Routes(), "", "  ")
 	if err != nil {
