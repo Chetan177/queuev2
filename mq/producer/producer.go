@@ -11,6 +11,7 @@ type MQProducer struct {
 	exchange     string
 	exchangeType string
 	conn         *amqp.Connection
+	MaxPriority  uint8
 }
 
 func NewMQProducer(amqpURI, exchange, exchangeType string) *MQProducer {
@@ -85,6 +86,7 @@ func (p *MQProducer) PublishMessage(routingKey string, body []byte, priority uin
 }
 
 func (p *MQProducer) CreateQueue(queueName string, maxPriority uint8) error {
+	p.MaxPriority = maxPriority
 	channel, err := p.conn.Channel()
 	if err != nil {
 		return fmt.Errorf("error:: getting channel: %+v", err)

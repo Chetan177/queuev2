@@ -10,6 +10,8 @@ import (
 	"log"
 	"net/http"
 	"queuev2/mq/producer"
+	"queuev2/position"
+	"queuev2/store/redis"
 	"regexp"
 	"sync"
 )
@@ -23,6 +25,8 @@ type Server struct {
 	restServerPort int
 	restServer     *echo.Echo
 	mqProducer     *producer.MQProducer
+	keyCounter     int
+	pos            *position.Position
 }
 
 type CustomValidator struct {
@@ -52,10 +56,13 @@ func createServer(restPort int, mqProducer *producer.MQProducer) *Server {
 	p := prometheus.NewPrometheus("echo", nil)
 	p.Use(apiServer)
 
+	st := redis.NewStore("127.0.0.1", "6379")
 	s := &Server{
 		restServerPort: restPort,
 		restServer:     apiServer,
 		mqProducer:     mqProducer,
+		keyCounter:     0,
+		pos:            position.NewPosition(st),
 	}
 
 	return s

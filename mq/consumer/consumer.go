@@ -6,6 +6,8 @@ import (
 	"log"
 	"queuev2/api"
 	"queuev2/httpclient"
+	"queuev2/position"
+	"queuev2/store/redis"
 	"time"
 )
 
@@ -16,6 +18,7 @@ type MQConsumer struct {
 	queueName  string
 	bindingKey string
 	conn       *amqp.Connection
+	pos        *position.Position
 }
 
 func NewMQConsumer(amqpURI, exchange, tag, queueName, bindingKey string) *MQConsumer {
@@ -34,6 +37,7 @@ func NewMQConsumer(amqpURI, exchange, tag, queueName, bindingKey string) *MQCons
 	}
 
 	c.conn = connection
+	c.pos = position.NewPosition(redis.NewStore("127.0.0.1", "6379"))
 	return c
 }
 
@@ -91,10 +95,10 @@ func (c *MQConsumer) handleMessages(deliveries <-chan amqp.Delivery) {
 
 		callUUID := task.CallData["call_uuid"]
 		log.Println("debug: finding agent for call_uuid", callUUID)
-		time.Sleep(10 * time.Second)
+		time.Sleep(100 * time.Second)
 
 		log.Printf("debug: agent %s found for call_uuid %s", agentURL, callUUID)
-
+		c.pos.RemoveItem(task.TaskID)
 		// Execute modify on call
 		err = c.transferToAgent(agentURL, callUUID)
 		if err != nil {

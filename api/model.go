@@ -9,6 +9,7 @@ type Task struct {
 	Priority uint8             `json:"priority" validate:"required"`
 	QueueID  string            `json:"queue_id" validate:"required"`
 	CallData map[string]string `json:"call_data" validate:"required"`
+	Position int               `json:"position"`
 }
 
 type Queue struct {

@@ -14,7 +14,7 @@ func (s *Server) submitTask(c echo.Context) error {
 	if err := c.Bind(task); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	task.TaskID = uuid.New().String()
+	task.TaskID = s.getNewTaskId()
 	if err := c.Validate(task); err != nil {
 		return err
 	}
@@ -24,8 +24,17 @@ func (s *Server) submitTask(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	s.mqProducer.PublishMessage(routingKey, data, task.Priority)
+	err = s.mqProducer.PublishMessage(routingKey, data, task.Priority)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
 
+	err = s.pos.AddItem(task.TaskID, int(s.mqProducer.MaxPriority-task.Priority))
+	p, err := s.pos.GetPosition(task.TaskID)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	task.Position = p + 1
 	return c.JSON(http.StatusOK, task)
 }
 
@@ -52,4 +61,11 @@ func generateQueueID(accID, queueName string, priority uint8) string {
 	qID := accID + "_" + queueName + fmt.Sprintf("%d", priority)
 	qEnc := b64.StdEncoding.EncodeToString([]byte(qID))
 	return "QID_" + qEnc
+}
+
+func (s *Server) getNewTaskId() string {
+	id := uuid.New().String()
+	id = fmt.Sprintf("%d_%s", s.keyCounter, id)
+	s.keyCounter++
+	return id
 }
