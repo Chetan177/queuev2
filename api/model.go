@@ -5,9 +5,10 @@ type TaskResponse struct {
 }
 
 type Task struct {
-	TaskID   string `json:"task_id"`
-	Priority uint8  `json:"priority" validate:"required"`
-	QueueID  string `json:"queue_id" validate:"required"`
+	TaskID   string            `json:"task_id"`
+	Priority uint8             `json:"priority" validate:"required"`
+	QueueID  string            `json:"queue_id" validate:"required"`
+	CallData map[string]string `json:"call_data" validate:"required"`
 }
 
 type Queue struct {

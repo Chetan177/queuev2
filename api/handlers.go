@@ -2,6 +2,7 @@ package api
 
 import (
 	b64 "encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -18,7 +19,13 @@ func (s *Server) submitTask(c echo.Context) error {
 		return err
 	}
 
-	// ToDo produce to mq
+	routingKey := task.QueueID + "_rKey"
+	data, err := json.Marshal(task)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	s.mqProducer.PublishMessage(routingKey, data, task.Priority)
+
 	return c.JSON(http.StatusOK, task)
 }
 
@@ -34,8 +41,10 @@ func (s *Server) createQueue(c echo.Context) error {
 		return err
 	}
 
-	// ToDo create queue on rabbitMq
-
+	err := s.mqProducer.CreateQueue(queue.QueueID, queue.MaxPriority)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
 	return c.JSON(http.StatusOK, queue)
 }
 
