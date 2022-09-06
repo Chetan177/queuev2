@@ -95,12 +95,12 @@ func (c *MQConsumer) handleMessages(deliveries <-chan amqp.Delivery) {
 
 		callUUID := task.CallData["call_uuid"]
 		log.Println("debug: finding agent for call_uuid", callUUID)
-		time.Sleep(100 * time.Second)
-
-		log.Printf("debug: agent %s found for call_uuid %s", agentURL, callUUID)
+		time.Sleep(10 * time.Second)
 		c.pos.RemoveItem(task.TaskID)
+		log.Printf("debug: agent %s found for call_uuid %s", agentURL, callUUID)
+
 		// Execute modify on call
-		err = c.transferToAgent(agentURL, callUUID)
+		err = c.transferToAgent(agentURL, callUUID, task.CallData)
 		if err != nil {
 			log.Println("error:: ", err)
 		}
@@ -108,12 +108,20 @@ func (c *MQConsumer) handleMessages(deliveries <-chan amqp.Delivery) {
 	}
 }
 
-func (c *MQConsumer) transferToAgent(agentURL, callUUID string) error {
-	url := "http://52.71.132.13:8888/v1.0/accounts/123/calls/" + callUUID + "/modify"
-	body := map[string]string{"cccml": "<Response><Say>Modify successfull</Say><Dial><Sip>" + agentURL + "</Sip></Dial></Response>"}
+func (c *MQConsumer) transferToAgent(agentURL, callUUID string, body map[string]string) error {
+	//url := "http://52.71.132.13:8888/v1.0/accounts/123/calls/" + callUUID + "/modify"
+	//body := map[string]string{"cccml": "<Response><Say>Modify successfull</Say><Dial><Sip>" + agentURL + "</Sip></Dial></Response>"}
+	//_, err := httpclient.Post(body, url, map[string]string{contentType: contentTypeJSON})
+	//if err != nil {
+	//	return err
+	//}
+	//
+
+	url := "http://bb31-134-238-18-189.ngrok.io/preview-incoming-call"
 	_, err := httpclient.Post(body, url, map[string]string{contentType: contentTypeJSON})
 	if err != nil {
 		return err
 	}
+	
 	return nil
 }

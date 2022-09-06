@@ -10,7 +10,7 @@ import (
 
 const (
 	exchange   = "queuev2-exchange"
-	queueName  = "QID_MTIzX3NhbGVzX3F1ZXVlNQ=="
+	queueName  = "QID_MTIzX3NhbGVzX3F1ZXVlMw=="
 	tag        = queueName + "_ConsumerTag"
 	bindingKey = queueName + "_rKey"
 )
